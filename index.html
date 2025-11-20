@@ -6,6 +6,9 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <!-- Tailwind via CDN (for the same layout / classes) -->
   <script src="https://cdn.tailwindcss.com"></script>
+
+  <script src="https://kit.fontawesome.com/153c991bdb.js" crossorigin="anonymous"></script>
+
   <style>
     body {
       background: #f1f5f9;
@@ -51,19 +54,13 @@
     <header class="bg-white border-b border-gray-200 shadow-sm">
       <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
         <div class="flex items-center gap-3">
-          <div
-            class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold text-lg shadow"
-          >
-            ◯
+          <div class="w-10 h-10 rounded-xl flex items-center justify-center text-primary text-2xl">
+            <i class="fa-kit fa-osos-logo text-4xl"></i>
           </div>
           <div>
             <h1 class="text-2xl font-bold text-gray-900">Spin a Wheel</h1>
             <p class="text-sm text-gray-500">OSOS Connect | Marketing</p>
           </div>
-        </div>
-        <div class="text-right text-sm text-gray-600">
-          <p class="font-semibold">Random Picker</p>
-          <p class="text-xs">Tap to spin</p>
         </div>
       </div>
     </header>
@@ -143,8 +140,21 @@
         </p>
       </section>
 
-      <!-- Entries / manager section -->
+      <!-- Right side: Employees for wheel + Employees pool -->
       <section class="bg-white border border-slate-200 rounded-2xl shadow-sm p-6 flex flex-col gap-5">
+        <!-- Import JSON -->
+        <div class="flex items-center justify-between gap-3 mb-3">
+          <label for="import-json-input" class="text-sm font-medium text-slate-800">
+            Import initial data (JSON)
+          </label>
+          <input
+            id="import-json-input"
+            type="file"
+            accept="application/json"
+            class="text-xs file:mr-2 file:px-2 file:py-1 file:rounded-md file:border-0 file:bg-slate-200 file:text-slate-700 hover:file:bg-slate-300"
+          />
+        </div>
+
         <!-- Number of groups -->
         <div class="flex items-center justify-between gap-3 mb-2">
           <label for="group-count-input" class="text-sm font-medium text-slate-800">
@@ -159,15 +169,15 @@
           />
         </div>
 
-        <!-- Entries accordion header -->
+        <!-- Employees (Wheel) header -->
         <div class="flex items-center justify-between gap-3">
           <div class="flex items-center justify-between w-full">
-            <h2 class="text-lg font-semibold text-slate-900">Entries</h2>          
+            <h2 class="text-lg font-semibold text-slate-900">Employees (Wheel)</h2>          
             <button id="toggle-entries-btn" class="text-sm px-3 py-1 rounded-md bg-slate-200 hover:bg-slate-300 text-slate-700">Hide</button>
           </div>          
         </div>
 
-        <!-- Entries accordion body -->
+        <!-- Employees (Wheel) accordion body -->
         <div id="entries-container">
           <!-- Add entry -->
           <form id="add-entry-form" class="flex gap-3 mt-2">
@@ -202,7 +212,7 @@
               >
                 0
               </p>
-              <p class="text-xs text-gray-600">Total Entries</p>
+              <p class="text-xs text-gray-600">Total Employees (Wheel)</p>
             </div>
             <div>
               <p
@@ -216,16 +226,11 @@
           </div>
         </div>
 
-        <!-- Employees accordion -->
+        <!-- Employees pool accordion -->
         <div class="mt-6 pt-4 border-t border-slate-200">
           <div class="flex items-center justify-between w-full mb-2">
-            <h2 class="text-md font-semibold text-slate-900">Employees</h2>
-            <button
-              id="toggle-employees-btn"
-              class="text-sm px-3 py-1 rounded-md bg-slate-200 hover:bg-slate-300 text-slate-700"
-            >
-              Hide
-            </button>
+            <h2 class="text-md font-semibold text-slate-900">Employees Pool</h2>
+            <button id="toggle-employees-btn" class="text-sm px-3 py-1 rounded-md bg-slate-200 hover:bg-slate-300 text-slate-700">Hide</button>
           </div>
 
           <div id="employees-container">
@@ -255,6 +260,27 @@
               Total Employees: <span id="employees-count">0</span>
             </div>
           </div>
+
+          <!-- Selected Groups accordion -->
+          <div class="mt-6 pt-4 border-t border-slate-200">
+            <div class="flex items-center justify-between w-full mb-2">
+              <h2 class="text-md font-semibold text-slate-900">Selected Groups</h2>
+              <button
+                id="toggle-groups-btn"
+                class="text-sm px-3 py-1 rounded-md bg-slate-200 hover:bg-slate-300 text-slate-700"
+              >
+                Hide
+              </button>
+            </div>
+          
+            <div id="groups-container">
+              <div
+                id="groups-list"
+                class="space-y-2 max-h-[220px] overflow-y-auto pr-1 text-sm text-slate-700"
+              ></div>
+            </div>
+          </div>
+          
         </div>
 
       </section>
@@ -284,17 +310,17 @@
             Winner
           </p>
           <p class="text-sm text-slate-500">
-            Selected product and its employees are shown below.
+            Selected entry and its employees are shown below.
           </p>
         </div>
 
-        <!-- Selected employees under the product -->
+        <!-- Selected employees under the entry -->
         <div
           id="result-employees-wrapper"
           class="mt-4 text-left text-sm text-slate-700 hidden"
         >
           <p class="font-semibold mb-1">
-            Selected Employees for this product:
+            Selected Employees for this entry:
           </p>
           <ul
             id="result-employees-list"
@@ -320,6 +346,36 @@
       </div>
     </div>
 
+    <!-- "Let the Game Begins" Modal -->
+    <div
+      id="setup-modal"
+      class="fixed inset-0 z-40 hidden items-center justify-center bg-black/40 backdrop-blur-sm"
+    >
+      <div
+        class="bg-white rounded-2xl shadow-xl max-w-sm w-full mx-4 p-6 space-y-4 relative"
+      >
+        <button
+          id="setup-close-btn"
+          class="absolute top-3 right-3 text-slate-400 hover:text-slate-600"
+          aria-label="Close"
+        >
+          ✕
+        </button>
+
+        <div class="text-center space-y-2">
+          <p class="text-xs font-semibold tracking-[.2em] text-green-500">
+            LET THE GAME BEGINS
+          </p>
+          <p class="text-lg font-bold text-slate-900">
+            Let the Game Begins
+          </p>
+          <p class="text-sm text-slate-500" id="setup-message">
+            Please review the setup before starting the game.
+          </p>
+        </div>
+      </div>
+    </div>
+
     <!-- Confetti Canvas -->
     <canvas
       id="confetti-canvas"
@@ -336,6 +392,12 @@
     const entriesContainer = document.getElementById("entries-container");
     const toggleEmployeesBtn = document.getElementById("toggle-employees-btn");
     const employeesContainer = document.getElementById("employees-container");
+    const toggleGroupsBtn = document.getElementById("toggle-groups-btn");
+    const groupsContainer = document.getElementById("groups-container");
+
+    const setupModal = document.getElementById("setup-modal");
+    const setupCloseBtn = document.getElementById("setup-close-btn");
+    const setupMessageEl = document.getElementById("setup-message");
 
     let entriesVisible = true;
     toggleEntriesBtn.addEventListener("click", () => {
@@ -360,6 +422,19 @@
         toggleEmployeesBtn.textContent = "Show";
       }
     });
+
+    let groupsVisible = true;
+    toggleGroupsBtn.addEventListener("click", () => {
+      groupsVisible = !groupsVisible;
+      if (groupsVisible) {
+        groupsContainer.classList.remove("hidden");
+        toggleGroupsBtn.textContent = "Hide";
+      } else {
+        groupsContainer.classList.add("hidden");
+        toggleGroupsBtn.textContent = "Show";
+      }
+    });
+
 
     window.addEventListener("DOMContentLoaded", function () {
       // ===== STATE =====
@@ -390,6 +465,10 @@
       let selectedEntry = null;
       let isSpinning = false;
       let timesSpun = 0;
+      let groups = []; // selected groups history
+
+      
+      const groupsList = document.getElementById("groups-list");
 
       // Wheel animation state
       const canvas = document.getElementById("wheel-canvas");
@@ -413,6 +492,7 @@
       const entriesCount = document.getElementById("entries-count");
       const timesSpunEl = document.getElementById("times-spun");
       const groupCountInput = document.getElementById("group-count-input");
+      const importJsonInput = document.getElementById("import-json-input");
 
       const addEmployeeForm = document.getElementById("add-employee-form");
       const newEmployeeInput = document.getElementById("new-employee-input");
@@ -439,6 +519,131 @@
       const confettiCtx = confettiCanvas.getContext("2d");
       let confettiPieces = [];
       let confettiActive = false;
+
+      // ===== CONFETTI HELPERS =====
+      function initConfettiCanvas() {
+        confettiCanvas.width = window.innerWidth;
+        confettiCanvas.height = window.innerHeight;
+      }
+
+      window.addEventListener("resize", () => {
+        if (!confettiActive) return;
+        initConfettiCanvas();
+      });
+
+      function launchConfetti() {
+        initConfettiCanvas();
+        confettiPieces = [];
+        const count = 180;
+        for (let i = 0; i < count; i++) {
+          confettiPieces.push({
+            x: Math.random() * confettiCanvas.width,
+            y: Math.random() * confettiCanvas.height - confettiCanvas.height,
+            w: 6 + Math.random() * 4,
+            h: 8 + Math.random() * 6,
+            color:
+              "hsl(" +
+              Math.floor(Math.random() * 360) +
+              ",100%,50%)",
+            speed: 2 + Math.random() * 3,
+            tilt: Math.random() * Math.PI,
+            tiltSpeed: 0.02 + Math.random() * 0.03,
+          });
+        }
+
+        confettiCanvas.classList.remove("hidden");
+        confettiActive = true;
+        const start = performance.now();
+
+        function animateConfetti(now) {
+          const elapsed = now - start;
+          confettiCtx.clearRect(
+            0,
+            0,
+            confettiCanvas.width,
+            confettiCanvas.height
+          );
+
+          confettiPieces.forEach((p) => {
+            p.y += p.speed;
+            p.x += Math.sin(p.tilt) * 1.5;
+            p.tilt += p.tiltSpeed;
+            if (p.y > confettiCanvas.height) {
+              p.y = -10;
+            }
+            confettiCtx.save();
+            confettiCtx.translate(p.x, p.y);
+            confettiCtx.rotate(p.tilt);
+            confettiCtx.fillStyle = p.color;
+            confettiCtx.fillRect(
+              -p.w / 2,
+              -p.h / 2,
+              p.w,
+              p.h
+            );
+            confettiCtx.restore();
+          });
+
+          if (elapsed < 2500) {
+            requestAnimationFrame(animateConfetti);
+          } else {
+            confettiActive = false;
+            confettiCanvas.classList.add("hidden");
+          }
+        }
+
+        requestAnimationFrame(animateConfetti);
+      }
+
+      // ===== "Let the Game Begins" Modal helpers =====
+      function showSetupModal(message) {
+        if (message) {
+          setupMessageEl.textContent = message;
+        }
+        setupModal.classList.remove("hidden");
+        setupModal.classList.add("flex");
+        launchConfetti();
+      }
+
+      function closeSetupModal() {
+        setupModal.classList.remove("flex");
+        setupModal.classList.add("hidden");
+      }
+
+      setupCloseBtn.addEventListener("click", closeSetupModal);
+      setupModal.addEventListener("click", (e) => {
+        if (e.target === setupModal) closeSetupModal();
+      });
+
+      // Validate configuration: wheel, pool, remainder
+      function validateGameConfig() {
+        let groupCount = parseInt(groupCountInput.value, 10);
+        if (isNaN(groupCount) || groupCount < 1) groupCount = 1;
+
+        const wheelCount = entries.length;
+        const poolCount = employees.length;
+        const problems = [];
+
+        // 1) Employees (Wheel) is empty
+        if (wheelCount === 0) {
+          problems.push("Employees (Wheel) list is empty.");
+        }
+
+        // 2) Remaining items in Employees Pool are less than group size
+        //    (0 is also considered "not enough to form a group")
+        if (poolCount < groupCount) {
+          problems.push(
+            `Employees Pool has ${poolCount} employee(s), but each group requires ${groupCount}.`
+          );
+        }
+
+        return {
+          ok: problems.length === 0,
+          message: problems.join(" ")
+        };
+      }
+
+
 
       // ===== WHEEL DRAWING =====
       function drawWheel() {
@@ -498,7 +703,7 @@
         ctx.restore();
       }
 
-      // ===== ENTRIES UI =====
+      // ===== ENTRIES (Employees for wheel) UI =====
       function renderEntries() {
         entriesList.innerHTML = "";
 
@@ -552,7 +757,7 @@
         timesSpunEl.textContent = String(timesSpun);
       }
 
-      // ===== EMPLOYEES UI =====
+      // ===== EMPLOYEES POOL UI =====
       function updateEmployeesCount() {
         employeesCount.textContent = String(employees.length);
       }
@@ -632,84 +837,62 @@
         }
       });
 
-      // ===== CONFETTI =====
-      function initConfettiCanvas() {
-        confettiCanvas.width = window.innerWidth;
-        confettiCanvas.height = window.innerHeight;
-      }
+      // ===== JSON IMPORT =====
+      if (importJsonInput) {
+        importJsonInput.addEventListener("change", function (e) {
+          const file = e.target.files && e.target.files[0];
+          if (!file) return;
 
-      window.addEventListener("resize", () => {
-        if (!confettiActive) return;
-        initConfettiCanvas();
-      });
+          const reader = new FileReader();
+          reader.onload = function (evt) {
+            try {
+              const text = evt.target.result;
+              const data = JSON.parse(text);
 
-      function launchConfetti() {
-        initConfettiCanvas();
-        confettiPieces = [];
-        const count = 180;
-        for (let i = 0; i < count; i++) {
-          confettiPieces.push({
-            x: Math.random() * confettiCanvas.width,
-            y: Math.random() * confettiCanvas.height - confettiCanvas.height,
-            w: 6 + Math.random() * 4,
-            h: 8 + Math.random() * 6,
-            color:
-              "hsl(" +
-              Math.floor(Math.random() * 360) +
-              ",100%,50%)",
-            speed: 2 + Math.random() * 3,
-            tilt: Math.random() * Math.PI,
-            tiltSpeed: 0.02 + Math.random() * 0.03,
-          });
-        }
+              // entries / employees for wheel
+              if (Array.isArray(data.entries)) {
+                entries = data.entries.slice();
+              } else if (Array.isArray(data.products)) {
+                entries = data.products.slice();
+              }
 
-        confettiCanvas.classList.remove("hidden");
-        confettiActive = true;
-        const start = performance.now();
+              // employees pool
+              if (Array.isArray(data.employees)) {
+                employees = data.employees.slice();
+              }
 
-        function animateConfetti(now) {
-          const elapsed = now - start;
-          confettiCtx.clearRect(
-            0,
-            0,
-            confettiCanvas.width,
-            confettiCanvas.height
-          );
+              // groupCount
+              if (typeof data.groupCount === "number" && data.groupCount > 0) {
+                groupCountInput.value = data.groupCount;
+              }
 
-          confettiPieces.forEach((p) => {
-            p.y += p.speed;
-            p.x += Math.sin(p.tilt) * 1.5;
-            p.tilt += p.tiltSpeed;
-            if (p.y > confettiCanvas.height) {
-              p.y = -10;
+              renderEntries();
+              renderEmployees();
+              drawWheel();
+            } catch (err) {
+              alert("Could not import JSON. Please check the file format.");
+              console.error(err);
             }
-            confettiCtx.save();
-            confettiCtx.translate(p.x, p.y);
-            confettiCtx.rotate(p.tilt);
-            confettiCtx.fillStyle = p.color;
-            confettiCtx.fillRect(
-              -p.w / 2,
-              -p.h / 2,
-              p.w,
-              p.h
-            );
-            confettiCtx.restore();
-          });
+          };
+          reader.readAsText(file);
 
-          if (elapsed < 2500) {
-            requestAnimationFrame(animateConfetti);
-          } else {
-            confettiActive = false;
-            confettiCanvas.classList.add("hidden");
-          }
-        }
-
-        requestAnimationFrame(animateConfetti);
+          // Allow re-importing same file
+          importJsonInput.value = "";
+        });
       }
 
       // ===== SPIN LOGIC =====
       function spinWheel() {
-        if (isSpinning || entries.length === 0) return;
+        if (isSpinning) return;
+
+        // Validate game configuration first
+        const configCheck = validateGameConfig();
+        if (!configCheck.ok) {
+          showSetupModal(configCheck.message);
+          return;
+        }
+
+        if (entries.length === 0) return;
 
         danceBox1.classList.remove("hidden");
         danceBox2.classList.remove("hidden");
@@ -763,7 +946,7 @@
             timesSpun += 1;
             updateStats();
 
-            // === Select employees for this product ===
+            // === Select employees for this entry ===
             resultEmployeesList.innerHTML = "";
             resultEmployeesWrapper.classList.add("hidden");
 
@@ -798,6 +981,15 @@
 
               resultEmployeesWrapper.classList.remove("hidden");
               renderEmployees();
+
+              if (chosenEmployees.length) {
+                groups.push({
+                  entry: selectedEntry,
+                  employees: chosenEmployees.slice(),
+                  round: timesSpun
+                });
+                renderGroups();
+              }
             }
 
             launchConfetti();
@@ -837,10 +1029,49 @@
         renderEmployees();
       });
 
+      function renderGroups() {
+        groupsList.innerHTML = "";
+
+        if (!groups.length) {
+          const empty = document.createElement("p");
+          empty.className = "text-xs text-slate-400";
+          empty.textContent =
+            "No groups formed yet. Spin the wheel to create the first group.";
+          groupsList.appendChild(empty);
+          return;
+        }
+
+        groups.forEach((group, index) => {
+          const card = document.createElement("div");
+          card.className =
+            "border border-slate-200 rounded-lg px-3 py-2 bg-slate-50";
+
+          const title = document.createElement("div");
+          title.className = "text-xs font-semibold text-slate-800 mb-1";
+          title.textContent = `Group ${index + 1} – ${group.entry}`;
+
+          const ul = document.createElement("ul");
+          ul.className =
+            "list-disc list-inside text-xs text-slate-700 space-y-0.5";
+
+          group.employees.forEach((emp) => {
+            const li = document.createElement("li");
+            li.textContent = emp;
+            ul.appendChild(li);
+          });
+
+          card.appendChild(title);
+          card.appendChild(ul);
+          groupsList.appendChild(card);
+        });
+      }
+
+
       // ===== INITIAL RENDER =====
       renderEntries();
       drawWheel();
       renderEmployees();
+      renderGroups();
     });
   </script>
 </body>
