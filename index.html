@@ -88,9 +88,9 @@
                 * * * * OSOS SRM OSOS EduRP OSOS Talents OSOS EDMS OSOS ERP OSOS
                 HCM OSOS QHSE OSOS FleetRP OSOS CRM OSOS GAITH OSOS SRM OSOS
                 * * * * OSOS SRM OSOS EduRP OSOS Talents OSOS EDMS OSOS ERP OSOS
-                </div>
+            </div>
 
-              <div id="dance-box-2" class="dance-box hidden" style="left:-65%;">
+            <div id="dance-box-2" class="dance-box hidden" style="left:-65%;">
                 OSOS ERP OSOS HCM OSOS QHSE OSOS FleetRP OSOS CRM OSOS GAITH
                 * * * * OSOS SRM OSOS EduRP OSOS Talents OSOS EDMS OSOS ERP OSOS
                 HCM OSOS QHSE OSOS FleetRP OSOS CRM OSOS GAITH OSOS SRM OSOS
@@ -99,7 +99,7 @@
                 * * * * OSOS SRM OSOS EduRP OSOS Talents OSOS EDMS OSOS ERP OSOS
                 HCM OSOS QHSE OSOS FleetRP OSOS CRM OSOS GAITH OSOS SRM OSOS
                 * * * * OSOS SRM OSOS EduRP OSOS Talents OSOS EDMS OSOS ERP OSOS
-                </div>
+            </div>
 
             <canvas
               id="wheel-canvas"
@@ -145,6 +145,21 @@
 
       <!-- Entries / manager section -->
       <section class="bg-white border border-slate-200 rounded-2xl shadow-sm p-6 flex flex-col gap-5">
+        <!-- Number of groups -->
+        <div class="flex items-center justify-between gap-3 mb-2">
+          <label for="group-count-input" class="text-sm font-medium text-slate-800">
+            Number of groups / employees per draw
+          </label>
+          <input
+            id="group-count-input"
+            type="number"
+            min="1"
+            value="1"
+            class="w-20 px-2 py-1 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-right"
+          />
+        </div>
+
+        <!-- Entries accordion header -->
         <div class="flex items-center justify-between gap-3">
           <div class="flex items-center justify-between w-full">
             <h2 class="text-lg font-semibold text-slate-900">Entries</h2>          
@@ -152,9 +167,10 @@
           </div>          
         </div>
 
-        <!-- Add entry -->
+        <!-- Entries accordion body -->
         <div id="entries-container">
-          <form id="add-entry-form" class="flex gap-3">
+          <!-- Add entry -->
+          <form id="add-entry-form" class="flex gap-3 mt-2">
             <input
               id="new-entry-input"
               type="text"
@@ -172,7 +188,7 @@
           <!-- Entries list -->
           <div
             id="entries-list"
-            class="space-y-2 max-h-[260px] overflow-y-auto pr-1"
+            class="space-y-2 max-h-[260px] overflow-y-auto pr-1 mt-3"
           ></div>
 
           <!-- Stats -->
@@ -196,6 +212,47 @@
                 0
               </p>
               <p class="text-xs text-gray-600">Times Spun</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Employees accordion -->
+        <div class="mt-6 pt-4 border-t border-slate-200">
+          <div class="flex items-center justify-between w-full mb-2">
+            <h2 class="text-md font-semibold text-slate-900">Employees</h2>
+            <button
+              id="toggle-employees-btn"
+              class="text-sm px-3 py-1 rounded-md bg-slate-200 hover:bg-slate-300 text-slate-700"
+            >
+              Hide
+            </button>
+          </div>
+
+          <div id="employees-container">
+            <!-- Add employee -->
+            <form id="add-employee-form" class="flex gap-3">
+              <input
+                id="new-employee-input"
+                type="text"
+                class="flex-1 px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Add employee name and press Enter or +"
+              />
+              <button
+                type="submit"
+                class="px-4 py-2 rounded-lg bg-green-500 text-white text-sm font-medium shadow-sm hover:bg-green-600"
+              >
+                +
+              </button>
+            </form>
+
+            <!-- Employees list -->
+            <div
+              id="employees-list"
+              class="space-y-2 max-h-[220px] overflow-y-auto pr-1 mt-3"
+            ></div>
+
+            <div class="mt-2 text-xs text-gray-600">
+              Total Employees: <span id="employees-count">0</span>
             </div>
           </div>
         </div>
@@ -227,8 +284,22 @@
             Winner
           </p>
           <p class="text-sm text-slate-500">
-            Congratulations! This entry has been selected.
+            Selected product and its employees are shown below.
           </p>
+        </div>
+
+        <!-- Selected employees under the product -->
+        <div
+          id="result-employees-wrapper"
+          class="mt-4 text-left text-sm text-slate-700 hidden"
+        >
+          <p class="font-semibold mb-1">
+            Selected Employees for this product:
+          </p>
+          <ul
+            id="result-employees-list"
+            class="list-disc list-inside space-y-1"
+          ></ul>
         </div>
 
         <div class="flex gap-3 mt-4">
@@ -258,11 +329,13 @@
 
   <!-- Vanilla JS logic -->
   <script>
-
+    // Outside DOMContentLoaded: elements already exist because script is at end of body
     const danceBox1 = document.getElementById("dance-box-1");
     const danceBox2 = document.getElementById("dance-box-2");
     const toggleEntriesBtn = document.getElementById("toggle-entries-btn");
     const entriesContainer = document.getElementById("entries-container");
+    const toggleEmployeesBtn = document.getElementById("toggle-employees-btn");
+    const employeesContainer = document.getElementById("employees-container");
 
     let entriesVisible = true;
     toggleEntriesBtn.addEventListener("click", () => {
@@ -276,6 +349,17 @@
       }
     });
 
+    let employeesVisible = true;
+    toggleEmployeesBtn.addEventListener("click", () => {
+      employeesVisible = !employeesVisible;
+      if (employeesVisible) {
+        employeesContainer.classList.remove("hidden");
+        toggleEmployeesBtn.textContent = "Hide";
+      } else {
+        employeesContainer.classList.add("hidden");
+        toggleEmployeesBtn.textContent = "Show";
+      }
+    });
 
     window.addEventListener("DOMContentLoaded", function () {
       // ===== STATE =====
@@ -302,6 +386,7 @@
         "EDMS",
         "Talents"
       ];
+      let employees = []; // pool of employees
       let selectedEntry = null;
       let isSpinning = false;
       let timesSpun = 0;
@@ -327,6 +412,12 @@
       const entriesList = document.getElementById("entries-list");
       const entriesCount = document.getElementById("entries-count");
       const timesSpunEl = document.getElementById("times-spun");
+      const groupCountInput = document.getElementById("group-count-input");
+
+      const addEmployeeForm = document.getElementById("add-employee-form");
+      const newEmployeeInput = document.getElementById("new-employee-input");
+      const employeesList = document.getElementById("employees-list");
+      const employeesCount = document.getElementById("employees-count");
 
       const resultModal = document.getElementById("result-modal");
       const resultNameEl = document.getElementById("result-name");
@@ -335,6 +426,12 @@
         document.getElementById("result-keep-button");
       const resultRemoveButton = document.getElementById(
         "result-remove-button"
+      );
+      const resultEmployeesWrapper = document.getElementById(
+        "result-employees-wrapper"
+      );
+      const resultEmployeesList = document.getElementById(
+        "result-employees-list"
       );
 
       const confettiCanvas =
@@ -455,6 +552,49 @@
         timesSpunEl.textContent = String(timesSpun);
       }
 
+      // ===== EMPLOYEES UI =====
+      function updateEmployeesCount() {
+        employeesCount.textContent = String(employees.length);
+      }
+
+      function renderEmployees() {
+        employeesList.innerHTML = "";
+
+        employees.forEach((name, index) => {
+          const row = document.createElement("div");
+          row.className =
+            "flex items-center gap-2 justify-between rounded-lg border border-slate-200 bg-slate-50 px-3 py-2";
+
+          const input = document.createElement("input");
+          input.type = "text";
+          input.value = name;
+          input.className =
+            "flex-1 bg-transparent border-none text-sm focus:outline-none focus:ring-0";
+          input.addEventListener("change", (e) => {
+            const v = e.target.value.trim();
+            employees[index] = v || `Employee ${index + 1}`;
+            updateEmployeesCount();
+          });
+
+          const removeBtn = document.createElement("button");
+          removeBtn.type = "button";
+          removeBtn.className =
+            "text-xs px-2 py-1 rounded-md bg-red-100 text-red-700 hover:bg-red-200";
+          removeBtn.textContent = "Delete";
+          removeBtn.addEventListener("click", () => {
+            employees.splice(index, 1);
+            updateEmployeesCount();
+            renderEmployees();
+          });
+
+          row.appendChild(input);
+          row.appendChild(removeBtn);
+          employeesList.appendChild(row);
+        });
+
+        updateEmployeesCount();
+      }
+
       // ===== RESULT MODAL =====
       function showResultModal(name) {
         resultNameEl.textContent = name || "—";
@@ -569,7 +709,6 @@
 
       // ===== SPIN LOGIC =====
       function spinWheel() {
-          
         if (isSpinning || entries.length === 0) return;
 
         danceBox1.classList.remove("hidden");
@@ -623,6 +762,44 @@
             spinButton.disabled = false;
             timesSpun += 1;
             updateStats();
+
+            // === Select employees for this product ===
+            resultEmployeesList.innerHTML = "";
+            resultEmployeesWrapper.classList.add("hidden");
+
+            let groupCount = parseInt(groupCountInput.value, 10);
+            if (isNaN(groupCount) || groupCount < 1) groupCount = 1;
+
+            if (employees.length > 0) {
+              const numToPick = Math.min(groupCount, employees.length);
+
+              // Build list of indices and shuffle
+              const indices = employees.map((_, i) => i);
+              for (let i = indices.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                const tmp = indices[i];
+                indices[i] = indices[j];
+                indices[j] = tmp;
+              }
+
+              const chosenIndices = indices.slice(0, numToPick).sort((a, b) => b - a); // descending for safe splice
+              const chosenEmployees = [];
+
+              chosenIndices.forEach((idx) => {
+                chosenEmployees.push(employees[idx]);
+                employees.splice(idx, 1); // remove from pool
+              });
+
+              chosenEmployees.forEach((name) => {
+                const li = document.createElement("li");
+                li.textContent = name;
+                resultEmployeesList.appendChild(li);
+              });
+
+              resultEmployeesWrapper.classList.remove("hidden");
+              renderEmployees();
+            }
+
             launchConfetti();
             showResultModal(selectedEntry);
             renderEntries(); // refresh highlight
@@ -634,7 +811,6 @@
 
         requestAnimationFrame(animateSpin);
       }
-
 
       // Click handlers
       spinButton.addEventListener("click", spinWheel);
@@ -651,9 +827,20 @@
         drawWheel();
       });
 
+      // ===== ADD EMPLOYEE FORM =====
+      addEmployeeForm.addEventListener("submit", function (e) {
+        e.preventDefault();
+        const v = newEmployeeInput.value.trim();
+        if (!v) return;
+        employees.push(v);
+        newEmployeeInput.value = "";
+        renderEmployees();
+      });
+
       // ===== INITIAL RENDER =====
       renderEntries();
       drawWheel();
+      renderEmployees();
     });
   </script>
 </body>
